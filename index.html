@@ -24,6 +24,13 @@
         .bill-container::-webkit-scrollbar-track {
             background-color: #e5e7eb; /* Gray-200 */
         }
+         /* Custom Venmo color for the button */
+        .bg-venmo-blue {
+            background-color: #008CFF;
+        }
+        .hover\:bg-venmo-dark {
+            background-color: #0077D3;
+        }
     </style>
     <script>
         // --- 1. RENTAL BILL DATA (EASILY EDITABLE JSON) ---
@@ -34,6 +41,7 @@
             dueDate: "2025-10-17",
             // The currency symbol to display
             currencySymbol: "$",
+            venmoUsername: "ai-liu",
             items: [
                 { description: "Base Monthly Rent", amount: 1400.00, category: "Rent" },
                 { description: "Shared Utilities (Water, Trash)", amount: 85.50, category: "Fees" },
@@ -274,12 +282,23 @@
                 </div>
             </section>
 
+            
             <!-- Total Due Footer -->
             <footer class="p-6 md:p-8 bg-gray-50 rounded-b-xl border-t border-gray-200">
-                <div id="total-due-card" class="p-4 rounded-lg bg-blue-100 shadow-md">
-                    <div class="flex justify-between items-center">
-                        <p id="total-due-label" class="text-xl font-semibold text-gray-700">Total Amount Due</p>
-                        <p id="total-due" class="text-3xl font-extrabold text-blue-800"></p>
+                <div id="payment-summary" class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                    <!-- Total Due Card -->
+                    <div id="total-due-card" class="p-4 rounded-lg bg-blue-100 shadow-md">
+                        <div class="flex justify-between items-center">
+                            <p id="total-due-label" class="text-xl font-semibold text-gray-700">Total Amount Due</p>
+                            <p id="total-due" class="text-3xl font-extrabold text-blue-800"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- NEW: Venmo Button Container -->
+                    <div id="venmo-button-container" class="hidden">
+                         <a id="venmo-link" href="#" target="_blank" class="w-full transition-all duration-200 block text-center py-3 px-6 rounded-lg font-bold text-lg text-white shadow-lg bg-venmo-blue hover:bg-venmo-dark focus:ring-4 focus:ring-blue-300">
+                             Pay via Venmo
+                         </a>
                     </div>
                 </div>
 
@@ -297,6 +316,7 @@
 
 </body>
 </html>
+
 
 
 
