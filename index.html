@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Rental Bill</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font import */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc; /* Light background for contrast */
+        }
+        /* Custom scrollbar for better aesthetics */
+        .bill-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .bill-container::-webkit-scrollbar-thumb {
+            background-color: #3b82f6; /* Blue-500 */
+            border-radius: 4px;
+        }
+        .bill-container::-webkit-scrollbar-track {
+            background-color: #e5e7eb; /* Gray-200 */
+        }
+    </style>
+    <script>
+        // --- 1. RENTAL BILL DATA (EASILY EDITABLE JSON) ---
+        const RENTAL_BILL_DATA = {
+            tenant: "Jason Min Sun Kim",
+            unit: "Upstairs Bed Room",
+            period: "October 2025",
+            dueDate: "2025-10-17",
+            // The currency symbol to display
+            currencySymbol: "$",
+            items: [
+                { description: "Base Monthly Rent", amount: 1400.00, category: "Rent" },
+                { description: "Shared Utilities (Water, Trash)", amount: 85.50, category: "Fees" },
+                { description: "Jar Rent", amount: 75.00, category: "Fees" },
+                { description: "Pet Fee (Monthly)", amount: 40.00, category: "Fees" },
+                { description: "Prorated Rent", amount: -406.00, category: "Credit" },
+                { description: "Prorated Rent Recovery Fee", amount: 405.99, category: "Fees" },
+                { description: "Street Parking Space", amount: 405.99, category: "Fees" },
+                { description: "Tarriffs", amount: 1000.00, category: "Fees" }
+            ],
+            // --- NEW: Image Gallery Data ---
+            galleryImages: [
+                // Replace these placeholder URLs with your actual hosted image links
+                { url: "https://placehold.co/400x300/e0f2f1/042f2e?text=Kitchen+View", caption: "Jars1" },
+                { url: "https://placehold.co/400x300/e0f7fa/004d40?text=Living+Room", caption: "Jars2" },
+                { url: "https://placehold.co/400x300/e8f5e9/1b5e20?text=Pool+Area", caption: "Jars3" },
+                { url: "https://placehold.co/400x300/fff3e0/e65100?text=Bedroom+1", caption: "Primary bedroom with walk-in closet." }
+            ]
+        };
+
+        // --- 2. JAVASCRIPT LOGIC ---
+
+        /**
+         * Formats a number as currency.
+         * @param {number} amount
+         * @returns {string} Formatted currency string
+         */
+        function formatCurrency(amount) {
+            const symbol = RENTAL_BILL_DATA.currencySymbol || '$';
+            return `${symbol}${Math.abs(amount).toFixed(2)}`;
+        }
+
+        /**
+         * Renders the image gallery based on the RENTAL_BILL_DATA JSON.
+         */
+        function renderImageGallery() {
+            const gallerySection = document.getElementById('gallery-section');
+            const gallery = document.getElementById('image-gallery');
+            const galleryData = RENTAL_BILL_DATA.galleryImages || [];
+            gallery.innerHTML = ''; // Clear previous content
+
+            // Show or hide the section based on whether there are images
+            if (galleryData.length > 0) {
+                gallerySection.classList.remove('hidden');
+            } else {
+                gallerySection.classList.add('hidden');
+                return;
+            }
+
+            galleryData.forEach(image => {
+                const figure = document.createElement('figure');
+                figure.className = 'bg-gray-100 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300';
+                figure.innerHTML = `
+                    <img src="${image.url}" alt="${image.caption}"
+                         class="w-full h-48 object-cover object-center"
+                         onerror="this.onerror=null;this.src='https://placehold.co/400x300/ffdddd/cc0000?text=Image+Load+Error';"
+                    >
+                    <figcaption class="p-3 text-sm text-gray-700 font-medium text-center">
+                        ${image.caption}
+                    </figcaption>
+                `;
+                gallery.appendChild(figure);
+            });
+        }
+
+
+        /**
+         * Renders the entire bill based on the RENTAL_BILL_DATA JSON.
+         */
+        function renderBill() {
+            const data = RENTAL_BILL_DATA;
+
+            // Update Header Details
+            document.getElementById('tenant-name').textContent = data.tenant;
+            document.getElementById('unit-number').textContent = data.unit;
+            document.getElementById('billing-period').textContent = data.period;
+            document.getElementById('due-date').textContent = new Date(data.dueDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            // Calculate Total and build Itemized List
+            let totalAmountDue = 0;
+            const itemizedList = document.getElementById('itemized-list');
+            itemizedList.innerHTML = ''; // Clear previous content
+
+            data.items.forEach(item => {
+                if (!item.waived) {
+                    totalAmountDue += item.amount;
+                }
+
+                const row = document.createElement('div');
+                row.className = `flex justify-between items-center py-3 border-b border-gray-100 transition duration-150 ease-in-out ${item.amount < 0 ? 'bg-green-50/70 text-green-700' : ''} ${item.waived ? 'opacity-60 italic line-through' : ''}`;
+
+                // Description Column
+                const descCol = document.createElement('div');
+                descCol.className = 'flex-1 text-sm md:text-base px-2';
+                descCol.innerHTML = `
+                    <p class="font-medium">${item.description}</p>
+                    ${item.waived ? '<span class="text-xs text-red-500 font-semibold">(Waived/Applied)</span>' : ''}
+                `;
+                row.appendChild(descCol);
+
+                // Amount Column
+                const amountCol = document.createElement('div');
+                amountCol.className = 'w-32 text-right font-semibold text-sm md:text-base px-2';
+                if (item.waived) {
+                    amountCol.textContent = 'N/A';
+                } else {
+                    amountCol.textContent = formatCurrency(item.amount);
+                    amountCol.classList.add(item.amount < 0 ? 'text-green-600' : 'text-gray-800');
+                }
+                row.appendChild(amountCol);
+
+                itemizedList.appendChild(row);
+            });
+
+            // --- NEW: Subtotal Row Injection ---
+            const subtotalRow = document.createElement('div');
+            // Styling for a visually distinct subtotal row
+            subtotalRow.className = 'flex justify-between items-center py-4 border-t-2 border-blue-200 mt-2 font-bold text-base md:text-lg text-gray-800 bg-gray-50 rounded-lg shadow-inner';
+            
+            const subtotalLabel = document.createElement('div');
+            subtotalLabel.className = 'flex-1 text-right px-4';
+            subtotalLabel.textContent = 'Subtotal:';
+            subtotalRow.appendChild(subtotalLabel);
+
+            const subtotalValue = document.createElement('div');
+            subtotalValue.className = 'w-32 text-right px-4 text-blue-700';
+            subtotalValue.textContent = formatCurrency(totalAmountDue);
+            subtotalRow.appendChild(subtotalValue);
+
+            itemizedList.appendChild(subtotalRow);
+            // --- END NEW SUBTOTAL ---
+
+            // Update Total Due (Uses the same calculated totalAmountDue)
+            document.getElementById('total-due').textContent = formatCurrency(totalAmountDue);
+
+            // Apply styling based on amount
+            const totalElement = document.getElementById('total-due-card');
+            totalElement.classList.remove('bg-green-100', 'bg-red-100', 'bg-blue-100');
+            if (totalAmountDue <= 0.001 && totalAmountDue >= -0.001) { // Check near zero to handle float math
+                totalElement.classList.add('bg-green-100');
+            } else if (totalAmountDue > 0) {
+                totalElement.classList.add('bg-blue-100');
+            } else {
+                totalElement.classList.add('bg-red-100'); // Credit balance
+            }
+
+            // Display a message if total is zero
+            const paidMessage = document.getElementById('paid-message');
+            if (totalAmountDue <= 0.001) {
+                paidMessage.classList.remove('hidden');
+                document.getElementById('total-due-label').textContent = "Balance / Credit";
+            } else {
+                paidMessage.classList.add('hidden');
+                document.getElementById('total-due-label').textContent = "Total Amount Due";
+            }
+            
+            // Render Image Gallery
+            renderImageGallery();
+        }
+
+        // Run the rendering function when the page loads
+        document.addEventListener('DOMContentLoaded', renderBill);
+    </script>
+</head>
+<body>
+
+    <!-- Main Container -->
+    <div class="min-h-screen p-4 flex justify-center items-start pt-10">
+        <div class="w-full max-w-4xl bg-white shadow-xl rounded-xl overflow-hidden bill-container">
+
+            <!-- Bill Header & Title -->
+            <header class="p-6 md:p-8 bg-blue-700 text-white rounded-t-xl">
+                <h1 class="text-3xl md:text-4xl font-extrabold mb-1">Rental Billing Statement</h1>
+                <p class="text-blue-200">For the period of <span id="billing-period" class="font-semibold"></span></p>
+            </header>
+
+            <!-- Tenant and Due Date Information -->
+            <section class="p-6 md:p-8 grid grid-cols-2 gap-4 border-b border-gray-200">
+                <div>
+                    <p class="text-sm font-semibold text-gray-500 mb-1">Tenant Name</p>
+                    <p id="tenant-name" class="text-lg font-bold text-gray-900"></p>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-gray-500 mb-1">Unit Number</p>
+                    <p id="unit-number" class="text-lg font-bold text-gray-900"></p>
+                </div>
+                <div class="col-span-2 sm:col-span-1">
+                    <p class="text-sm font-semibold text-gray-500 mb-1">Payment Due By</p>
+                    <p id="due-date" class="text-lg font-bold text-red-500"></p>
+                </div>
+            </section>
+
+            <!-- Itemized Charges Section -->
+            <section class="p-6 md:p-8">
+                <h2 class="text-xl font-bold text-gray-700 mb-4">Itemized Charges</h2>
+
+                <!-- Table Header -->
+                <div class="flex justify-between font-semibold text-sm uppercase text-gray-500 border-b-2 border-blue-200 pb-2 mb-2 sticky top-0 bg-white">
+                    <div class="flex-1 px-2">Description</div>
+                    <div class="w-32 text-right px-2">Amount</div>
+                </div>
+
+                <!-- Dynamic Item List Container (Includes Subtotal now) -->
+                <div id="itemized-list">
+                    <!-- Rows and Subtotal will be injected here by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Image Gallery Section -->
+            <section id="gallery-section" class="p-6 md:p-8 border-t border-gray-200 hidden">
+                <h2 class="text-xl font-bold text-gray-700 mb-4">Property Gallery</h2>
+                <p class="text-sm text-gray-500 mb-6">A visual tour of your unit and community amenities.</p>
+
+                <div id="image-gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Images will be dynamically inserted here -->
+                </div>
+            </section>
+
+            <!-- Total Due Footer -->
+            <footer class="p-6 md:p-8 bg-gray-50 rounded-b-xl border-t border-gray-200">
+                <div id="total-due-card" class="p-4 rounded-lg bg-blue-100 shadow-md">
+                    <div class="flex justify-between items-center">
+                        <p id="total-due-label" class="text-xl font-semibold text-gray-700">Total Amount Due</p>
+                        <p id="total-due" class="text-3xl font-extrabold text-blue-800"></p>
+                    </div>
+                </div>
+
+                <!-- Zero Balance Message -->
+                <div id="paid-message" class="hidden mt-4 bg-green-50 border-l-4 border-green-500 text-green-700 p-4" role="alert">
+                    <p class="font-bold">Status: Paid in Full</p>
+                    <p class="text-sm">Thank you! Your balance for this period is settled.</p>
+                </div>
+
+                <p class="text-xs text-gray-400 mt-4 text-center">This is an informational statement and does not constitute a formal invoice.</p>
+            </footer>
+
+        </div>
+    </div>
+
+</body>
+</html>
