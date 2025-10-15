@@ -183,7 +183,25 @@
             } else {
                 totalElement.classList.add('bg-red-100'); // Credit balance
             }
-
+            
+            // --- NEW: Venmo Button Logic ---
+            const venmoLinkElement = document.getElementById('venmo-link');
+            const venmoContainer = document.getElementById('venmo-button-container');
+            const venmoUsername = data.venmoUsername;
+            
+            if (totalAmountDue > 0.01) {
+                const totalForVenmo = totalAmountDue.toFixed(2);
+                const venmoNote = encodeURIComponent(`Rent for ${data.unit} - ${data.period}`);
+                // Use the web-based payment link for universal compatibility
+                const venmoUrl = `https://venmo.com/${venmoUsername}?txn=pay&amount=${totalForVenmo}&note=${venmoNote}`;
+                
+                venmoLinkElement.href = venmoUrl;
+                venmoLinkElement.textContent = `Pay ${formatCurrency(totalAmountDue)} via Venmo`;
+                venmoContainer.classList.remove('hidden');
+            } else {
+                // If balance is settled or a credit exists, hide the payment button
+                venmoContainer.classList.add('hidden');
+            }
             // Display a message if total is zero
             const paidMessage = document.getElementById('paid-message');
             if (totalAmountDue <= 0.001) {
@@ -279,5 +297,6 @@
 
 </body>
 </html>
+
 
 
