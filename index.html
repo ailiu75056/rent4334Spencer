@@ -37,18 +37,18 @@
         const RENTAL_BILL_DATA = {
             tenant: "Jason Min Sun Kim",
             unit: "Upstairs Bed Room",
-            period: "April 2026",
-            dueDate: "2026-4-3",
+            period: "May 2026",
+            dueDate: "2026-5-4",
             // The currency symbol to display
             currencySymbol: "$",
             venmoUsername: "ai-liu",
             items: [
                 { description: "Base Monthly Rent", amount: 1400.00, category: "Rent" },
                 { description: "Internet", amount: 32.78, category: "Fees" },
-                { description: "Eletricity 3/1-3/31", amount: 30.62, category: "Fees" },
+                { description: "Eletricity 4/1-4/31", amount: 41.44, category: "Fees" },
                 { description: "Gas", amount: 7, category: "Fees" },
-                { description: "Water 3/1-3/31", amount: 26.5, category: "Fees" },
-                {description: "Sewer 3/1-3/31", amount: 7, category: "Fees" }],
+                { description: "Water 4/1-4/31", amount: 24.5, category: "Fees" },
+                {description: "Sewer 4/1-4/31", amount: 7, category: "Fees" }],
             // --- NEW: Image Gallery Data ---
             galleryImages: [
                 // Replace these placeholder URLs with your actual hosted image links
@@ -196,7 +196,7 @@
             
             if (totalAmountDue > 0.01) {
                 const totalForVenmo = totalAmountDue.toFixed(2);
-                const venmoNote = encodeURIComponent(`Rent for ${data.unit} - ${data.period}`);
+                const venmoNote = encodeURIComponent(`Expenses for ${data.unit} - ${data.period}`);
                 // Use the web-based payment link for universal compatibility
                 const venmoUrl = `https://venmo.com/${venmoUsername}?txn=pay&amount=${totalForVenmo}&note=${venmoNote}`;
                 
